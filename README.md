@@ -73,7 +73,7 @@ Once you have set up everything, you are ready to begin training the models. The
 
 ### Configuration via JSON File
 
-- All model and training hyperparameters are specified in a JSON file. Please find folders [`jsons`](json) for all the json files used for different GeneRAIN models. 
+- All model and training hyperparameters are specified in a JSON file. Please find folders [`jsons`](jsons) for all the json files used for different GeneRAIN models. 
 - The filename of this JSON configuration should be set in the environmental variable `PARAM_JSON_FILE`.
 
 ### Debugging
