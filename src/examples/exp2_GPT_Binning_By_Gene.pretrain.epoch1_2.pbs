@@ -1,0 +1,26 @@
+#!/bin/bash
+
+#PBS -l ncpus=36
+#PBS -l ngpus=3
+#PBS -l mem=285GB
+#PBS -l jobfs=80GB
+#PBS -q gpuvolta
+#PBS -P yr31
+#PBS -l walltime=35:00:00
+#PBS -l storage=gdata/yr31+scratch/yr31
+#PBS -l wd
+
+# Label for the training task
+label=exp2_GPT_Binning_By_Gene
+
+# Please replace YOUR_PROJECT_PATH with your actually project path
+# Change param config json if you want to train other models or want other hyper-parameters
+param_file=/YOUR_PROJECT_PATH/jsons/exp2_GPT_Binning_By_Gene.param_config.json
+echo "param file used: $param_file"
+
+# Activate your virtual env if necessary
+source /g/data/yr31/zs2131/venv/generain/bin/activate
+module add python3
+
+# Please replace YOUR_PROJECT_PATH with your actually project path
+export PARAM_JSON_FILE=$param_file && torchrun --nnodes=1 --nproc_per_node=3 --rdzv_id=100 --rdzv_backend=c10d --rdzv_endpoint=localhost:29400 /YOUR_PROJECT_PATH/src/train/pretrain.py --epoch_from 1 --epoch_to 2 --exp_label $label

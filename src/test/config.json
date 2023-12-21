@@ -1,0 +1,23 @@
+
+{
+    "gene2vec_file_path": "data/external/gene2vec/gene2vec_dim_200_iter_9.txt",
+    "gene2vec_embeddings_pyn_no_special_emb_path": "data/embedding/gene2vec_embeddings.no_special_emb.pyn",
+    "gene2vec_gene_to_idx_json_no_special_emb_path": "data/embedding/gene2vec_gene_to_idx.no_special_emb.json",
+    "gene2vec_embeddings_pyn_path": "data/embedding/gene2vec_embeddings.pyn",
+    "gene2vec_gene_to_idx_json_path": "data/embedding/gene2vec_gene_to_idx.json",
+    "ARCHS_gene_expression_h5_path": "data/external/ARCHS/human_gene_v2.2.h5",
+    "ARCHS_file_basename_prefix": "human_gene_v2.2",
+    "expression_binning_interval_file_path": "data/embedding/expression_binning_interval_file.json",
+    "debugging_directory_path": "results/debugging",
+    "Ensembl_ID_gene_symbol_mapping_file_path": "data/external/Gencode/gencode.v43.Ensembl_ID_gene_symbol_mapping.txt",
+    "fine_tuning_K562_essential_dataset_file_path": "data/external/scPerturb/data/ReplogleWeissman2022_K562_essential.h5ad.mean_agg.pickle",
+    "fine_tuning_K562_gwps_dataset_file_path": "data/external/scPerturb/data/ReplogleWeissman2022_K562_gwps.h5ad.mean_agg.pickle",
+    "fine_tuning_rpe1_dataset_file_path": "data/external/scPerturb/data/ReplogleWeissman2022_rpe1.h5ad.mean_agg.pickle",
+    "fine_tuning_K562_essential_binned_dataset_file_path": "data/external/scPerturb/data/ReplogleWeissman2022_K562_essential.h5ad.mean_agg.binned.pickle",
+    "fine_tuning_K562_gwps_binned_dataset_file_path": "data/external/scPerturb/data/ReplogleWeissman2022_K562_gwps.h5ad.mean_agg.binned.pickle",
+    "fine_tuning_rpe1_binned_dataset_file_path": "data/external/scPerturb/data/ReplogleWeissman2022_rpe1.h5ad.mean_agg.binned.pickle",
+    "checkpoint_dir_path": "results/debugging/models",
+    "tensorboard_log_dir_path": "results/debugging/logs",
+    "evaluation_data_dir_path": "results/debugging/eval_data",
+    "number_of_special_embeddings": 3
+}
