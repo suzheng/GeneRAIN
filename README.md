@@ -56,7 +56,7 @@ After installation, the package and its modules can be imported into other Pytho
 
 
 5. **Prepare the Data**:
-	- Download the dataset from Zenodo.
+	- Download the data from Zenodo. Refer to the data [README file](data/README.md) in the data directory for descriptions and details of the files.
 	- Extract the downloaded `tar.gz` file.
 	- Move the downloaded `human_gene_v2.2_with_zero_expr_genes_bin_tot2000_final_gene2vec_chunk_*.npy` files to `data/external/ARCHS/normalize_each_gene/` in the extracted folder.
 	- Download the ARCHS4 [`human_gene_v2.2.h5`](https://maayanlab.cloud/archs4/download.html) file, and move the `human_gene_v2.2.h5` file to folder `data/external/ARCHS/`
