@@ -1,3 +1,5 @@
+from utils.params import params
+params = params()
 import numpy as np
 import torch
 from train.common_params_funs import *
@@ -45,11 +47,11 @@ class BertMasking:
         else:
             return sequence_np, mask
 
-def get_bert_masking(mask_fraction=MASK_FRACTIONS[0]):
+def get_bert_masking(mask_fraction=params.MASK_FRACTIONS[0]):
     bert_masking = BertMasking(mask_fraction=mask_fraction,
-                                mask_prob=PERCENT_OF_MASKED_GENES_ASSIGNED_AS_TOKEN_ZERO, 
-                                random_token_prob=PERCENT_OF_MASKED_GENES_ASSIGNED_AS_RANDOM_TOKENS,
+                                mask_prob=params.PERCENT_OF_MASKED_GENES_ASSIGNED_AS_TOKEN_ZERO, 
+                                random_token_prob=params.PERCENT_OF_MASKED_GENES_ASSIGNED_AS_RANDOM_TOKENS,
                                 mask_token=0,
-                                num_bins=NUM_BINS
+                                num_bins=params.NUM_BINS
                                 )
     return bert_masking

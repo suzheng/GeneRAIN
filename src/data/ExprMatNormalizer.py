@@ -1,3 +1,5 @@
+from utils.params import params
+params = params()
 import random
 import torch
 import numpy as np
@@ -5,11 +7,13 @@ import pandas as pd
 from utils.config_loader import Config
 from utils.Ensembl_ID_gene_symbol_mapping_reader import read_ensembl_to_gene_mapping
 from utils.json_utils import JsonUtils
-from train.common_params_funs import *
+from train.common_params_funs import config
+from train.common import train
+
 config = Config()
 ju = JsonUtils()
 
-def normalize_expr_mat(gene_stat_file, gene_by_sample_expr_mat, quantified_gene_list, output_prefix="./stats_df", min_mean_val_for_zscore=0.1, min_total_count=-1, use_and_keep_zero_expr_genes=USE_AND_KEEP_ZERO_EXPR_GENES):
+def normalize_expr_mat(gene_stat_file, gene_by_sample_expr_mat, quantified_gene_list, output_prefix="./stats_df", min_mean_val_for_zscore=0.1, min_total_count=-1, use_and_keep_zero_expr_genes=params.USE_AND_KEEP_ZERO_EXPR_GENES):
     """
     Process gene data to produce zscores.
 

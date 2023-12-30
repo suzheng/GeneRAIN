@@ -1,3 +1,5 @@
+from utils.params import params
+params = params()
 import argparse
 import anndata
 import numpy as np
@@ -21,9 +23,11 @@ config = Config()
 
 os.environ['RUNNING_MODE'] = 'training'
 
-from train.common_params_funs import *
+from train.common_params_funs import config
+from train.common import train
 
-gene_emb_name = GENE_EMB_NAME
+
+gene_emb_name = params.GENE_EMB_NAME
 dataset_label = args.dataset_label
 
 file_path_key_in_config=f"fine_tuning_{dataset_label}_dataset_file_path"

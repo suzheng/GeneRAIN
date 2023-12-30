@@ -1,9 +1,13 @@
+from utils.params import params
+params = params()
 import os
 import torch
 from torch.utils.data import Dataset, ConcatDataset
 # param_json_file = '/g/data/yr31/zs2131/tasks/2023/RNA_expr_net/anal/training/exp15/exp15ft_all_genes_on_bin_genes.param_config.json'
 # os.environ['PARAM_JSON_FILE'] = param_json_file
-from train.common_params_funs import *
+from train.common_params_funs import config, get_gene2idx
+from train.common import train
+
 
 from utils.utils import get_device, get_model, get_config, get_gene2idx
 from data.CombinedDataset import get_combined_datasets
@@ -55,5 +59,5 @@ for dataset_label in ['K562_essential', 'K562_gwps', 'rpe1']:
     res[dataset_label] = {"pert_gene_by_expr_gene_mat": pert_real_conseq,
                           "gene2idx_in_the_mat": gene2idx_for_pert_real_conseq
                          }
-with open(f"{config.proj_path}/data/external/scPerturb/data/pert_gene_by_binned_expr_gene_mat_{GENE_EMB_NAME}.pkl", 'wb') as file:
+with open(f"{config.proj_path}/data/external/scPerturb/data/pert_gene_by_binned_expr_gene_mat_{params.GENE_EMB_NAME}.pkl", 'wb') as file:
     pickle.dump(res, file)

@@ -1,3 +1,5 @@
+from utils.params import params
+params = params()
 import h5py
 import torch
 import numpy as np
@@ -9,7 +11,9 @@ from data.discretize_expression import discretize_expression_zscores, discretize
 from data.discretize_expression import uniform_bin_count_keep_ones
 from data.data_utils import get_top_genes
 from utils.json_utils import JsonUtils
-from train.common import *
+from train.common_params_funs import config, get_gene2idx
+from train.common import train
+
 from utils.config_loader import Config
 ju = JsonUtils()
 config = Config()
@@ -21,12 +25,12 @@ class GN_Dataset(Dataset):
     def __init__(self, 
     sample_by_gene_expr_mat=None,
     gene_symbols=None,
-    n_bins=NUM_BINS, 
-    mask_fraction=MASK_FRACTIONS[0], 
-    expr_discretization_method=EXPR_DISCRETIZATION_METHOD, 
-    num_of_genes=NUM_OF_GENES_SELECTED,
-    number_of_special_embeddings=NUMBER_OF_SPECIAL_TOKEN_IN_DATASET,
-    sort_return_expr_numerically=(TRANSFORMER_MODEL_NAME == "GPT" or TRANSFORMER_MODEL_NAME == "Bert_pred_tokens")
+    n_bins=params.NUM_BINS, 
+    mask_fraction=params.MASK_FRACTIONS[0], 
+    expr_discretization_method=params.EXPR_DISCRETIZATION_METHOD, 
+    num_of_genes=params.NUM_OF_GENES_SELECTED,
+    number_of_special_embeddings=params.NUMBER_OF_SPECIAL_TOKEN_IN_DATASET,
+    sort_return_expr_numerically=(params.TRANSFORMER_MODEL_NAME == "GPT" or params.TRANSFORMER_MODEL_NAME == "Bert_pred_tokens")
     ):
         # self.gene_symbols = np.array([gene_symbol.decode('utf-8') for gene_symbol in gene_symbols])
         assert len(gene_symbols) == sample_by_gene_expr_mat.shape[1], "len(gene_symbols) != sample_by_gene_expr_mat.shape[1]!"

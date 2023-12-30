@@ -1,5 +1,9 @@
+from utils.params import params
+params = params()
 import os
-from train.common import *
+from train.common_params_funs import BASE_SEED, config
+from train.common import train
+
 
 import torch
 from torch.utils.data import Dataset, DataLoader, ConcatDataset, Subset
@@ -10,21 +14,29 @@ from utils.checkpoint_utils import find_latest_checkpoint
 from collections import OrderedDict
 from data.SplitReploglePerturbationDataset import split_dataset
 
+
+from utils.config_loader import Config
+config = Config()
 if os.environ.get("RUNNING_MODE") == "debug":
-    TOTAL_NUMBER_OF_DATASETS = 2
+    print("Run in debugging mode!")
+    config = Config(config.project_path + "/src/test/config.json")
+else:
+    print("Run in training mode!")
+
+gene_to_idx_path = config.get("gene2vec_gene_to_idx_json_path")
 
 number_of_special_embeddings = config.get("number_of_special_embeddings")
 
-# SAMPLE_NUMBER_FOR_EACH_PERTURBATION = param_finder.find("SAMPLE_NUMBER_FOR_EACH_PERTURBATION", 10)
+# params.SAMPLE_NUMBER_FOR_EACH_PERTURBATION = param_finder.find("params.SAMPLE_NUMBER_FOR_EACH_PERTURBATION", 10)
 
-OUTPUT_ONE_GENE_EVERY = param_finder.find("OUTPUT_ONE_GENE_EVERY", 1)
+#OUTPUT_ONE_GENE_EVERY = param_finder.find("OUTPUT_ONE_GENE_EVERY", 1)
 EMSEMBL2GENE_PATH = config.get("Ensembl_ID_gene_symbol_mapping_file_path")
 
 def adata2dataset(adata, label=None, target_certain_gene_num=None):
     return ReploglePerturbationDataset4Leaper(adata,
                                         gene_to_idx_path=gene_to_idx_path,
                                         emsembl2gene_path=EMSEMBL2GENE_PATH,
-                                        n_expr_bins=NUM_BINS,
+                                        n_expr_bins=params.NUM_BINS,
                                         expr_bin_for_fake_additional_gene_output=-1,
                                         label=label,
                                         target_certain_gene_num=target_certain_gene_num
@@ -71,30 +83,30 @@ def get_combined_datasets(dataset_idx, mask_fraction, need_both_pretrain_and_per
     for dataset_label in dataset_label_list:
     #for dataset_label in ['K562_gwps']:
         dataset_idx += 1
-        if EXPR_DISCRETIZATION_METHOD == "Direct_quantile":
+        if params.EXPR_DISCRETIZATION_METHOD == "Direct_quantile":
             file_path_key_in_config=f"fine_tuning_{dataset_label}_dataset_file_path"
-        elif EXPR_DISCRETIZATION_METHOD == "uniform_bin_count_keep_ones":
+        elif params.EXPR_DISCRETIZATION_METHOD == "uniform_bin_count_keep_ones":
             file_path_key_in_config=f"fine_tuning_{dataset_label}_binned_dataset_file_path"
         else:
             print("Unrecognized expr_discretization_method")
         dataset_file = config.get(file_path_key_in_config)
-        if EXPR_DISCRETIZATION_METHOD == "uniform_bin_count_keep_ones":
-            dataset_file = dataset_file.replace("mean_agg.binned", f"mean_agg.{GENE_EMB_NAME}.binned")
+        if params.EXPR_DISCRETIZATION_METHOD == "uniform_bin_count_keep_ones":
+            dataset_file = dataset_file.replace("mean_agg.binned", f"mean_agg.{params.GENE_EMB_NAME}.binned")
             print(f"Will use file {dataset_file}")
-        elif EXPR_DISCRETIZATION_METHOD == "Direct_quantile":
-            if GENE_EMB_NAME != "gene2vec":
-                sys.exit("GENE_EMB_NAME != gene2vec and EXPR_DISCRETIZATION_METHOD == Direct_quantile")
-        if USE_AND_KEEP_ZERO_EXPR_GENES == False:
+        elif params.EXPR_DISCRETIZATION_METHOD == "Direct_quantile":
+            if params.GENE_EMB_NAME != "gene2vec":
+                sys.exit("params.GENE_EMB_NAME != gene2vec and params.EXPR_DISCRETIZATION_METHOD == Direct_quantile")
+        if params.USE_AND_KEEP_ZERO_EXPR_GENES == False:
             dataset_file = dataset_file.replace(".mean_agg.", ".mean_agg.without_zero_expr_genes.")
             print("WILL NOT USE ZERO EXPR GENES")
             print(f"use file {dataset_file}")
         train_adata, test_adata = split_dataset(dataset_file = dataset_file, 
-                    test_size = 1.0-TRAINING_SET_FRACTION, 
+                    test_size = 1.0-params.TRAINING_SET_FRACTION, 
                     random_state = BASE_SEED, 
                     baseline_cell_label = "non-targeting")
 
-        train_dataset = adata2dataset(train_adata, dataset_idx, target_certain_gene_num=NUM_OF_GENES_SELECTED)
-        val_dataset = adata2dataset(test_adata, dataset_idx, target_certain_gene_num=NUM_OF_GENES_SELECTED)
+        train_dataset = adata2dataset(train_adata, dataset_idx, target_certain_gene_num=params.NUM_OF_GENES_SELECTED)
+        val_dataset = adata2dataset(test_adata, dataset_idx, target_certain_gene_num=params.NUM_OF_GENES_SELECTED)
         tot_perturb_train_len += len(train_dataset)
         tot_perturb_val_len += len(val_dataset)
 

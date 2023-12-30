@@ -1,3 +1,5 @@
+from utils.params import params
+params = params()
 import torch
 import torch.distributed as dist
 from utils.config_loader import Config
@@ -28,48 +30,142 @@ TENSORBOARD_LOG_DIR_PATH = config.get("tensorboard_log_dir_path")
 
 BASE_SEED = 8
 
-GENE_EMB_NAME = param_finder.find("GENE_EMB_NAME", "gene2vec") # gene2vec coding_pseudo coding_lncrna coding_smallrna coding_hs_mouse coding 
-TOTAL_NUMBER_OF_DATASETS = param_finder.find("TOTAL_NUMBER_OF_DATASETS", 5)
-DATASET_TO_GET_FOR_MIXED_DATASET = param_finder.find("DATASET_TO_GET_FOR_MIXED_DATASET", None) # ["both", "human", "nonhuman", None]
-HIDDEN_SIZE = param_finder.find("HIDDEN_SIZE", 200)
-model_dim = HIDDEN_SIZE
-PERFORMER_NET_LAST_LAYER_REQUIRES_GRAD = param_finder.find("PERFORMER_NET_LAST_LAYER_REQUIRES_GRAD", True)
-FINETUNE_TO_RECONSTRUCT_EXPR_OF_ALL_GENES = param_finder.find("FINETUNE_TO_RECONSTRUCT_EXPR_OF_ALL_GENES", False)
-USE_PRETRAIN_MODEL_FOR_FINETUNE = param_finder.find("USE_PRETRAIN_MODEL_FOR_FINETUNE", True)
-PRETRAIN_EXPERIMENT_FOR_FINETUNE = param_finder.find("PRETRAIN_EXPERIMENT_FOR_FINETUNE", "exp9")
-
-#be one of 'Performer', "Traditional_Transformer", "Bert"
-TRANSFORMER_MODEL_NAME = param_finder.find("TRANSFORMER_MODEL_NAME", "Bert")
-LAYER_NORM_EPS = param_finder.find("LAYER_NORM_EPS", 1e-12)
-OUTPUT_ATTENTIONS = param_finder.find("OUTPUT_ATTENTIONS", False)
-OUTPUT_HIDDEN_STATES = param_finder.find("OUTPUT_HIDDEN_STATES", False)
-ONLY_USE_PERTURBED_GENE_TO_PREDICT = param_finder.find("ONLY_USE_PERTURBED_GENE_TO_PREDICT", False)
-
-LEARN_ON_ZERO_EXPR_GENES = param_finder.find("LEARN_ON_ZERO_EXPR_GENES", False)
-OUTPUT_PARAMETER_HIST_TO_TENSOBOARD_BY_BATCH = param_finder.find("OUTPUT_PARAMETER_HIST_TO_TENSOBOARD_BY_BATCH", False)
-TRANSFORMER_NORM_FIRST = param_finder.find("TRANSFORMER_NORM_FIRST", True)
-TRANSFORMER_HIDDEN_ACT_FUNC = param_finder.find("TRANSFORMER_HIDDEN_ACT_FUNC", "gelu")
-MIN_MEAN_VAL_FOR_ZSCORE = param_finder.find("MIN_MEAN_VAL_FOR_ZSCORE", 0.1)
-SAMPLE_NUMBER_FOR_EACH_PERTURBATION = param_finder.find("SAMPLE_NUMBER_FOR_EACH_PERTURBATION", 10)
-
-PERTURBED_GENE_ALWAYS_IN_INPUT_EXPR_IN_PERTURB_DATASET = param_finder.find("PERTURBED_GENE_ALWAYS_IN_INPUT_EXPR_IN_PERTURB_DATASET", False)
-
-NUMBER_OF_SPECIAL_TOKEN_IN_DATASET = 0
+params.NUMBER_OF_SPECIAL_TOKEN_IN_DATASET = 0
 NUMBER_OF_SPECIAL_TOKEN = config.get("number_of_special_embeddings")
 
-PRETRAIN_LOSS_ONLY_ON_MASKED_GENES = param_finder.find("PRETRAIN_LOSS_ONLY_ON_MASKED_GENES", True)
-USE_AND_KEEP_ZERO_EXPR_GENES = param_finder.find("USE_AND_KEEP_ZERO_EXPR_GENES", True)
-NUM_OF_GENES_SELECTED = param_finder.find("NUM_OF_GENES_SELECTED", -1) # -1 for selecting all genes
-ONLY_USE_POSITIVE_ZSCORES_IN_TRAINING = param_finder.find("ONLY_USE_POSITIVE_ZSCORES_IN_TRAINING", False)
+if False:
+    params.GENE_EMB_NAME = param_finder.find("params.GENE_EMB_NAME", "gene2vec") # gene2vec coding_pseudo coding_lncrna coding_smallrna coding_hs_mouse coding 
+    params.TOTAL_NUMBER_OF_DATASETS = param_finder.find("params.TOTAL_NUMBER_OF_DATASETS", 5)
+    params.DATASET_TO_GET_FOR_MIXED_DATASET = param_finder.find("params.DATASET_TO_GET_FOR_MIXED_DATASET", None) # ["both", "human", "nonhuman", None]
+    params.HIDDEN_SIZE = param_finder.find("params.HIDDEN_SIZE", 200)
+    model_dim = params.HIDDEN_SIZE
+    params.PERFORMER_NET_LAST_LAYER_REQUIRES_GRAD = param_finder.find("params.PERFORMER_NET_LAST_LAYER_REQUIRES_GRAD", True)
+    params.FINETUNE_TO_RECONSTRUCT_EXPR_OF_ALL_GENES = param_finder.find("params.FINETUNE_TO_RECONSTRUCT_EXPR_OF_ALL_GENES", False)
+    params.USE_PRETRAIN_MODEL_FOR_FINETUNE = param_finder.find("params.USE_PRETRAIN_MODEL_FOR_FINETUNE", True)
+    params.PRETRAIN_EXPERIMENT_FOR_FINETUNE = param_finder.find("params.PRETRAIN_EXPERIMENT_FOR_FINETUNE", "exp9")
 
-SHUFFLE_GENE_INDICES_IN_EVALUATION = param_finder.find("SHUFFLE_GENE_INDICES_IN_EVALUATION", False)
-SHUFFLE_EXPR_INDICES_IN_EVALUATION = param_finder.find("SHUFFLE_EXPR_INDICES_IN_EVALUATION", False)
+    #be one of 'Performer', "Traditional_Transformer", "Bert"
+    params.TRANSFORMER_MODEL_NAME = param_finder.find("params.TRANSFORMER_MODEL_NAME", "Bert")
+    params.LAYER_NORM_EPS = param_finder.find("params.LAYER_NORM_EPS", 1e-12)
+    params.OUTPUT_ATTENTIONS = param_finder.find("params.OUTPUT_ATTENTIONS", False)
+    params.OUTPUT_HIDDEN_STATES = param_finder.find("params.OUTPUT_HIDDEN_STATES", False)
+    params.ONLY_USE_PERTURBED_GENE_TO_PREDICT = param_finder.find("params.ONLY_USE_PERTURBED_GENE_TO_PREDICT", False)
 
-METHOD_TO_COMBINE_INPUT_AND_ENCODING = param_finder.find("METHOD_TO_COMBINE_INPUT_AND_ENCODING", None)
+    params.LEARN_ON_ZERO_EXPR_GENES = param_finder.find("params.LEARN_ON_ZERO_EXPR_GENES", False)
+    params.OUTPUT_PARAMETER_HIST_TO_TENSOBOARD_BY_BATCH = param_finder.find("params.OUTPUT_PARAMETER_HIST_TO_TENSOBOARD_BY_BATCH", False)
+    params.TRANSFORMER_NORM_FIRST = param_finder.find("params.TRANSFORMER_NORM_FIRST", True)
+    params.TRANSFORMER_HIDDEN_ACT_FUNC = param_finder.find("params.TRANSFORMER_HIDDEN_ACT_FUNC", "gelu")
+    params.MIN_MEAN_VAL_FOR_ZSCORE = param_finder.find("params.MIN_MEAN_VAL_FOR_ZSCORE", 0.1)
+    params.SAMPLE_NUMBER_FOR_EACH_PERTURBATION = param_finder.find("params.SAMPLE_NUMBER_FOR_EACH_PERTURBATION", 10)
 
-PRETRAIN_MODEL_CHECKPOINT_PATH = config.get("checkpoint_dir_path") + "/" + str(param_finder.find("PRETRAIN_MODEL_CHECKPOINT_PATH", None))
+    params.PERTURBED_GENE_ALWAYS_IN_INPUT_EXPR_IN_PERTURB_DATASET = param_finder.find("params.PERTURBED_GENE_ALWAYS_IN_INPUT_EXPR_IN_PERTURB_DATASET", False)
+
+
+
+    params.PRETRAIN_LOSS_ONLY_ON_MASKED_GENES = param_finder.find("params.PRETRAIN_LOSS_ONLY_ON_MASKED_GENES", True)
+    params.USE_AND_KEEP_ZERO_EXPR_GENES = param_finder.find("params.USE_AND_KEEP_ZERO_EXPR_GENES", True)
+    params.NUM_OF_GENES_SELECTED = param_finder.find("params.NUM_OF_GENES_SELECTED", -1) # -1 for selecting all genes
+    params.ONLY_USE_POSITIVE_ZSCORES_IN_TRAINING = param_finder.find("params.ONLY_USE_POSITIVE_ZSCORES_IN_TRAINING", False)
+
+    params.SHUFFLE_GENE_INDICES_IN_EVALUATION = param_finder.find("params.SHUFFLE_GENE_INDICES_IN_EVALUATION", False)
+    params.SHUFFLE_EXPR_INDICES_IN_EVALUATION = param_finder.find("params.SHUFFLE_EXPR_INDICES_IN_EVALUATION", False)
+
+    params.METHOD_TO_COMBINE_INPUT_AND_ENCODING = param_finder.find("params.METHOD_TO_COMBINE_INPUT_AND_ENCODING", None)
+
+    params.NUM_BINS = param_finder.find("params.NUM_BINS", 100)
+
+    #fraction of genes whose expression will be masked in each epoch, like at epoch 1 mask 10% of genes, epoch 2 mask 20%
+    params.MASK_FRACTIONS = param_finder.find("params.MASK_FRACTIONS", [0.15, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9])
+
+    params.PERCENT_OF_MASKED_GENES_ASSIGNED_AS_TOKEN_ZERO = param_finder.find("params.PERCENT_OF_MASKED_GENES_ASSIGNED_AS_TOKEN_ZERO", 0.8)
+    params.PERCENT_OF_MASKED_GENES_ASSIGNED_AS_RANDOM_TOKENS = param_finder.find("params.PERCENT_OF_MASKED_GENES_ASSIGNED_AS_RANDOM_TOKENS", 0.1)
+
+    params.BATCH_SIZE = param_finder.find("params.BATCH_SIZE", 8)
+
+    #number of layers of the model
+    params.MODEL_DEPTH = param_finder.find("params.MODEL_DEPTH", 6)
+
+    #number of tranformer attention heads
+    params.NUM_HEADS = param_finder.find("params.NUM_HEADS", 8)
+
+    #dimension of the attention heads
+    params.DIM_HEAD = param_finder.find("params.DIM_HEAD", 32)
+
+    #whether to use projection to get proximation of attention
+    params.NO_RPOJECTION = param_finder.find("params.NO_RPOJECTION", False)
+
+    #whether to use reversible layers
+    params.MODEL_REVERSIBLE = param_finder.find("params.MODEL_REVERSIBLE", True)
+
+    # Number of iterations before redrawing features in the FAVOR+ attention mechanism
+    params.FEATURE_REDRAW_INTERVAL = param_finder.find("params.FEATURE_REDRAW_INTERVAL", 1000)
+
+    # Dropout probability applied to the output of the embedding layer
+    params.EMB_DROPOUT = param_finder.find("params.EMB_DROPOUT", 0.)
+
+    # Dropout probability applied to the output of the feed-forward layers
+    params.FF_DROPOUT = param_finder.find("params.FF_DROPOUT", 0.1)
+
+    # Dropout probability applied to the output of the self-attention mechanism
+    params.ATTN_DROPOUT = param_finder.find("params.ATTN_DROPOUT", 0.1)
+
+    params.OUTPUTLAYER2FCS_DROPOUT_RATE = param_finder.find("params.OUTPUTLAYER2FCS_DROPOUT_RATE", 0.1)
+
+    # If True, use generalized attention; otherwise, use standard self-attention
+    params.GENERALIZED_ATTENTION = param_finder.find("params.GENERALIZED_ATTENTION", False)
+
+    # The type of expression embedding used ("positional" or other options)
+    params.EXPRESSION_EMB_TYPE = param_finder.find("params.EXPRESSION_EMB_TYPE", "positional")
+
+    # The type of output layer (in this case, two fully connected layers)
+    params.TO_OUT_LAYER_TYPE = param_finder.find("params.TO_OUT_LAYER_TYPE", "2FCs")
+
+    # The hidden size of the first fully connected layer in the output layer
+    params.OUTPUT_LAYER_HIDDEN_SIZE1 = param_finder.find("params.OUTPUT_LAYER_HIDDEN_SIZE1", 40)
+
+    # The hidden size of the second fully connected layer in the output layer
+    params.OUTPUT_LAYER_HIDDEN_SIZE2 = param_finder.find("params.OUTPUT_LAYER_HIDDEN_SIZE2", 20)
+
+    params.PRETRAINED_TOKEN_EMB_FOR_INIT = param_finder.find("params.PRETRAINED_TOKEN_EMB_FOR_INIT", False)
+    # If True, allow the gradients to update the gene ID embedding during training
+    params.GENE_ID_EMB_REQUIRES_GRAD = param_finder.find("params.GENE_ID_EMB_REQUIRES_GRAD", True)
+
+    # If True, allow the gradients to update the expression embedding during training
+    params.EXPR_EMB_REQUIRES_GRAD = param_finder.find("params.EXPR_EMB_REQUIRES_GRAD", True)
+
+    # Base learning rate for the learning rate scheduler
+    params.BASE_LR = param_finder.find("params.BASE_LR", 0.00001)
+
+    # Maximum learning rate for the learning rate scheduler
+    params.MAX_LR = param_finder.find("params.MAX_LR", 0.0001)
+
+    params.EPOCH_TO_HAVE_MANUAL_LR = param_finder.find("params.EPOCH_TO_HAVE_MANUAL_LR", 30)
+
+    params.ONE_CYCLE_LR_PCT_START = param_finder.find("params.ONE_CYCLE_LR_PCT_START", 0.2)
+    params.ONE_CYCLE_LR_DIV_FACTOR = param_finder.find("params.ONE_CYCLE_LR_DIV_FACTOR", 5)
+    params.ONE_CYCLE_LR_TOTAL_STEPS = param_finder.find("params.ONE_CYCLE_LR_TOTAL_STEPS", 40)
+    params.ONE_CYCLE_LR_EPOCHS = param_finder.find("params.ONE_CYCLE_LR_EPOCHS", 40)
+
+    # Number of iterations for the learning rate to go from the base to the max learning rate
+    params.STEP_SIZE_UP = param_finder.find("params.STEP_SIZE_UP", 4)
+
+    # Method for discretizing expression values
+    params.EXPR_DISCRETIZATION_METHOD = param_finder.find("params.EXPR_DISCRETIZATION_METHOD", "Direct_quantile")
+
+    # Fraction of the dataset to be used for training (remaining for validation)
+    params.TRAINING_SET_FRACTION = param_finder.find("params.TRAINING_SET_FRACTION", 0.9)
+    params.GRADIENT_ACCUMULATION_STEPS = param_finder.find("params.GRADIENT_ACCUMULATION_STEPS", 5)
+    params.OPTIMIZER = param_finder.find("params.OPTIMIZER", "AdamW")
+    params.ADAMW_WEIGHT_DECAY = param_finder.find("params.ADAMW_WEIGHT_DECAY", 0.01)
+    params.LOSS_FN = param_finder.find("params.LOSS_FN", "MSE")
+    params.SCHEDULER = param_finder.find("params.SCHEDULER", "OneCycleLR")
+    params.SAVE_CHECK_POINT_BY_BATCHES = param_finder.find("params.SAVE_CHECK_POINT_BY_BATCHES", False)
+
+    
+
+PRETRAIN_MODEL_CHECKPOINT_PATH = config.get("checkpoint_dir_path") + "/" + str(param_finder.find("params.SPECIFIED_PRETRAIN_MODEL_CHECKPOINT_PATH", None))
 if not os.path.isfile(PRETRAIN_MODEL_CHECKPOINT_PATH):
-    PRETRAIN_MODEL_CHECKPOINT_PATH = config.get("checkpoint_dir_path") + f"/pretrain/{PRETRAIN_EXPERIMENT_FOR_FINETUNE}/model.rank0."
+    PRETRAIN_MODEL_CHECKPOINT_PATH = config.get("checkpoint_dir_path") + f"/pretrain/{params.PRETRAIN_EXPERIMENT_FOR_FINETUNE}/model.rank0."
     print(PRETRAIN_MODEL_CHECKPOINT_PATH)
     PRETRAIN_MODEL_CHECKPOINT_PATH = find_latest_checkpoint(PRETRAIN_MODEL_CHECKPOINT_PATH)
     print(PRETRAIN_MODEL_CHECKPOINT_PATH)
@@ -77,94 +173,7 @@ else:
     print(f"Will use specified PRETRAIN_MODEL_CHECKPOINT_PATH {PRETRAIN_MODEL_CHECKPOINT_PATH}")
 EMSEMBL2GENE_PATH = config.get("Ensembl_ID_gene_symbol_mapping_file_path")
 
-NUM_BINS = param_finder.find("NUM_BINS", 100)
 
-#fraction of genes whose expression will be masked in each epoch, like at epoch 1 mask 10% of genes, epoch 2 mask 20%
-MASK_FRACTIONS = param_finder.find("MASK_FRACTIONS", [0.15, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9])
-
-PERCENT_OF_MASKED_GENES_ASSIGNED_AS_TOKEN_ZERO = param_finder.find("PERCENT_OF_MASKED_GENES_ASSIGNED_AS_TOKEN_ZERO", 0.8)
-PERCENT_OF_MASKED_GENES_ASSIGNED_AS_RANDOM_TOKENS = param_finder.find("PERCENT_OF_MASKED_GENES_ASSIGNED_AS_RANDOM_TOKENS", 0.1)
-
-BATCH_SIZE = param_finder.find("BATCH_SIZE", 8)
-
-#number of layers of the model
-MODEL_DEPTH = param_finder.find("MODEL_DEPTH", 6)
-
-#number of tranformer attention heads
-NUM_HEADS = param_finder.find("NUM_HEADS", 8)
-
-#dimension of the attention heads
-DIM_HEAD = param_finder.find("DIM_HEAD", 32)
-
-#whether to use projection to get proximation of attention
-NO_RPOJECTION = param_finder.find("NO_RPOJECTION", False)
-
-#whether to use reversible layers
-MODEL_REVERSIBLE = param_finder.find("MODEL_REVERSIBLE", True)
-
-# Number of iterations before redrawing features in the FAVOR+ attention mechanism
-FEATURE_REDRAW_INTERVAL = param_finder.find("FEATURE_REDRAW_INTERVAL", 1000)
-
-# Dropout probability applied to the output of the embedding layer
-EMB_DROPOUT = param_finder.find("EMB_DROPOUT", 0.)
-
-# Dropout probability applied to the output of the feed-forward layers
-FF_DROPOUT = param_finder.find("FF_DROPOUT", 0.1)
-
-# Dropout probability applied to the output of the self-attention mechanism
-ATTN_DROPOUT = param_finder.find("ATTN_DROPOUT", 0.1)
-
-OUTPUTLAYER2FCS_DROPOUT_RATE = param_finder.find("OUTPUTLAYER2FCS_DROPOUT_RATE", 0.1)
-
-# If True, use generalized attention; otherwise, use standard self-attention
-GENERALIZED_ATTENTION = param_finder.find("GENERALIZED_ATTENTION", False)
-
-# The type of expression embedding used ("positional" or other options)
-EXPRESSION_EMB_TYPE = param_finder.find("EXPRESSION_EMB_TYPE", "positional")
-
-# The type of output layer (in this case, two fully connected layers)
-TO_OUT_LAYER_TYPE = param_finder.find("TO_OUT_LAYER_TYPE", "2FCs")
-
-# The hidden size of the first fully connected layer in the output layer
-OUTPUT_LAYER_HIDDEN_SIZE1 = param_finder.find("OUTPUT_LAYER_HIDDEN_SIZE1", 40)
-
-# The hidden size of the second fully connected layer in the output layer
-OUTPUT_LAYER_HIDDEN_SIZE2 = param_finder.find("OUTPUT_LAYER_HIDDEN_SIZE2", 20)
-
-PRETRAINED_TOKEN_EMB_FOR_INIT = param_finder.find("PRETRAINED_TOKEN_EMB_FOR_INIT", False)
-# If True, allow the gradients to update the gene ID embedding during training
-GENE_ID_EMB_REQUIRES_GRAD = param_finder.find("GENE_ID_EMB_REQUIRES_GRAD", True)
-
-# If True, allow the gradients to update the expression embedding during training
-EXPR_EMB_REQUIRES_GRAD = param_finder.find("EXPR_EMB_REQUIRES_GRAD", True)
-
-# Base learning rate for the learning rate scheduler
-BASE_LR = param_finder.find("BASE_LR", 0.00001)
-
-# Maximum learning rate for the learning rate scheduler
-MAX_LR = param_finder.find("MAX_LR", 0.0001)
-
-EPOCH_TO_HAVE_MANUAL_LR = param_finder.find("EPOCH_TO_HAVE_MANUAL_LR", 30)
-
-ONE_CYCLE_LR_PCT_START = param_finder.find("ONE_CYCLE_LR_PCT_START", 0.2)
-ONE_CYCLE_LR_DIV_FACTOR = param_finder.find("ONE_CYCLE_LR_DIV_FACTOR", 5)
-ONE_CYCLE_LR_TOTAL_STEPS = param_finder.find("ONE_CYCLE_LR_TOTAL_STEPS", 40)
-ONE_CYCLE_LR_EPOCHS = param_finder.find("ONE_CYCLE_LR_EPOCHS", 40)
-
-# Number of iterations for the learning rate to go from the base to the max learning rate
-STEP_SIZE_UP = param_finder.find("STEP_SIZE_UP", 4)
-
-# Method for discretizing expression values
-EXPR_DISCRETIZATION_METHOD = param_finder.find("EXPR_DISCRETIZATION_METHOD", "Direct_quantile")
-
-# Fraction of the dataset to be used for training (remaining for validation)
-TRAINING_SET_FRACTION = param_finder.find("TRAINING_SET_FRACTION", 0.9)
-GRADIENT_ACCUMULATION_STEPS = param_finder.find("GRADIENT_ACCUMULATION_STEPS", 5)
-OPTIMIZER = param_finder.find("OPTIMIZER", "AdamW")
-ADAMW_WEIGHT_DECAY = param_finder.find("ADAMW_WEIGHT_DECAY", 0.01)
-LOSS_FN = param_finder.find("LOSS_FN", "MSE")
-SCHEDULER = param_finder.find("SCHEDULER", "OneCycleLR")
-SAVE_CHECK_POINT_BY_BATCHES = param_finder.find("SAVE_CHECK_POINT_BY_BATCHES", False)
 
 
 def set_seed(seed):
@@ -182,7 +191,7 @@ def get_special_encoding(original_encoding, special_token_emb_module, num_specia
 def cleanup():
     dist.destroy_process_group()
 
-def normalize_expression(data, num_bins=NUM_BINS):
+def normalize_expression(data, num_bins=params.NUM_BINS):
     data = (data - num_bins/2.0)/(num_bins/2.0)
     return data
 
@@ -252,8 +261,8 @@ def shuffle_sequences(tensor):
         shuffled_tensor[i] = shuffled_tensor[i, torch.randperm(seq_len)]
     return shuffled_tensor
 
-def get_pred_using_model_and_input(model, gene_indices, input_expression, zero_expression_genes=None, transformer_model_name=TRANSFORMER_MODEL_NAME, output_attentions=OUTPUT_ATTENTIONS, output_hidden_states=OUTPUT_HIDDEN_STATES, 
-                                   shuffle_gene_indices=False, shuffle_expr_indices=False, only_use_perturbed_gene_to_predict=ONLY_USE_PERTURBED_GENE_TO_PREDICT, labels=None, **kwargs):
+def get_pred_using_model_and_input(model, gene_indices, input_expression, zero_expression_genes=None, transformer_model_name=params.TRANSFORMER_MODEL_NAME, output_attentions=params.OUTPUT_ATTENTIONS, output_hidden_states=params.OUTPUT_HIDDEN_STATES, 
+                                   shuffle_gene_indices=False, shuffle_expr_indices=False, only_use_perturbed_gene_to_predict=params.ONLY_USE_PERTURBED_GENE_TO_PREDICT, labels=None, **kwargs):
     """
     Get prediction.
 
@@ -342,7 +351,7 @@ def extract_hidden_states(output, layer=-1):
     
     return output.hidden_states[layer]
 
-def get_layers_in_model(model, transformer_model_name=TRANSFORMER_MODEL_NAME):
+def get_layers_in_model(model, transformer_model_name=params.TRANSFORMER_MODEL_NAME):
     if hasattr(model, 'gene_expr_transformer'):
         gene_expr_transformer = model.gene_expr_transformer
     else:
@@ -363,7 +372,7 @@ def get_layers_in_model(model, transformer_model_name=TRANSFORMER_MODEL_NAME):
         raise ValueError(f"Unknown transformer model name: {transformer_model_name}")
     return layers
 
-def get_gene_symbols_filt_on_z_dup(use_and_keep_zero_expr_genes = USE_AND_KEEP_ZERO_EXPR_GENES, min_mean_val_for_zscore = MIN_MEAN_VAL_FOR_ZSCORE):
+def get_gene_symbols_filt_on_z_dup(use_and_keep_zero_expr_genes = params.USE_AND_KEEP_ZERO_EXPR_GENES, min_mean_val_for_zscore = params.MIN_MEAN_VAL_FOR_ZSCORE):
     import pandas as pd
     from utils.utils import get_config
     config = get_config()
@@ -388,7 +397,7 @@ def get_gene_symbols_filt_on_z_dup(use_and_keep_zero_expr_genes = USE_AND_KEEP_Z
     gene_symbols_filt_on_z_dup = df['gene_symbol'][combined_conditions].tolist()
     return gene_symbols_filt_on_z_dup
 
-def get_gene2idx(gene_emb_name=GENE_EMB_NAME, sort_by_index=False):
+def get_gene2idx(gene_emb_name=params.GENE_EMB_NAME, sort_by_index=False):
     from utils.json_utils import JsonUtils
     from utils.utils import get_config
     config = get_config()
@@ -410,7 +419,7 @@ def get_gene2idx(gene_emb_name=GENE_EMB_NAME, sort_by_index=False):
     idx_to_gene = {v: k for k, v in gene_to_idx.items()}
     return gene_to_idx, idx_to_gene
 
-def get_gene2idx_of_whole_gene_emb(gene_emb_name=GENE_EMB_NAME):
+def get_gene2idx_of_whole_gene_emb(gene_emb_name=params.GENE_EMB_NAME):
     from utils.json_utils import JsonUtils
     from utils.utils import get_config
     config = get_config()

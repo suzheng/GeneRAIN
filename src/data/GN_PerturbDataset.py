@@ -1,3 +1,5 @@
+from utils.params import params
+params = params()
 import anndata
 import random
 import torch
@@ -10,7 +12,9 @@ from data.discretize_expression import discretize_expression_zscores, discretize
 from utils.string_tensor import string_to_tensor
 from data.discretize_expression import uniform_bin_count_keep_ones
 from data.data_utils import get_top_genes, find_indices_of_elements_in_an_array
-from train.common import *
+from train.common_params_funs import config
+from train.common import train
+
 config = Config()
 ju = JsonUtils()
 import sys
@@ -39,17 +43,17 @@ class PerturbationDataset(Dataset):
         perturbed_gene_list,
         gene_to_idx_dict,
         new_expr_bin_val,
-        sample_number_for_each_perturbation=SAMPLE_NUMBER_FOR_EACH_PERTURBATION,
-        n_expr_bins=NUM_BINS,
+        sample_number_for_each_perturbation=params.SAMPLE_NUMBER_FOR_EACH_PERTURBATION,
+        n_expr_bins=params.NUM_BINS,
         output_one_gene_every=1,
         expr_bin_for_fake_additional_gene_output=-1,
         dataset_label=None,
-        target_certain_gene_num=NUM_OF_GENES_SELECTED,
-        number_of_special_embeddings=NUMBER_OF_SPECIAL_TOKEN_IN_DATASET,
-        only_use_postive_zscores_in_training= ONLY_USE_POSITIVE_ZSCORES_IN_TRAINING,
-        perturbed_gene_always_in_input_expr=PERTURBED_GENE_ALWAYS_IN_INPUT_EXPR_IN_PERTURB_DATASET,
-        expr_discretization_method=EXPR_DISCRETIZATION_METHOD,
-        sort_return_expr_numerically=(TRANSFORMER_MODEL_NAME == "GPT" or TRANSFORMER_MODEL_NAME == "Bert_pred_tokens")
+        target_certain_gene_num=params.NUM_OF_GENES_SELECTED,
+        number_of_special_embeddings=params.NUMBER_OF_SPECIAL_TOKEN_IN_DATASET,
+        only_use_postive_zscores_in_training= params.ONLY_USE_POSITIVE_ZSCORES_IN_TRAINING,
+        perturbed_gene_always_in_input_expr=params.PERTURBED_GENE_ALWAYS_IN_INPUT_EXPR_IN_PERTURB_DATASET,
+        expr_discretization_method=params.EXPR_DISCRETIZATION_METHOD,
+        sort_return_expr_numerically=(params.TRANSFORMER_MODEL_NAME == "GPT" or params.TRANSFORMER_MODEL_NAME == "Bert_pred_tokens")
     ):
         self.sample_number_for_each_perturbation = sample_number_for_each_perturbation
         #self.config = config

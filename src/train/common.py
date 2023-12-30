@@ -1,3 +1,5 @@
+from utils.params import params
+params = params()
 import torch
 import torch.optim as optim
 import torch.distributed as dist
@@ -26,7 +28,8 @@ from models.GeneExprTransformerGPT import GeneExprTransformerGPT
 from models.GeneExprTransformerBertPredTokens import GeneExprTransformerBertPredTokens
 from models.GeneExprTransformerBertExprInnerEmb import GeneExprTransformerBertExprInnerEmb
 from utils.utils import print_config_assignments
-from train.common_params_funs import *
+from train.common_params_funs import config, add_histogram_to_tensorboard, get_current_learning_rate, get_pred_using_model_and_input, get_gene2idx, get_gene2idx_of_whole_gene_emb
+
 
 
 #for debugging
@@ -40,7 +43,7 @@ def output_to_a_file(masked_idx, output_file = config.project_path + '/results/d
             outfile.write('\n')
 
 # Training function
-def train(model, data_loader, loss_fn, optimizer, device, writer, checkpoint_by_batches_dir, epoch, previous_batches_size, rank, scheduler, exp_label, mode="pretrain", print_every_n_batches=10, gradient_accumulation_steps=GRADIENT_ACCUMULATION_STEPS, times_output_to_tensorboard=6, save_check_point_by_batches=True):
+def train(model, data_loader, loss_fn, optimizer, device, writer, checkpoint_by_batches_dir, epoch, previous_batches_size, rank, scheduler, exp_label, mode="pretrain", print_every_n_batches=10, gradient_accumulation_steps=params.GRADIENT_ACCUMULATION_STEPS, times_output_to_tensorboard=6, save_check_point_by_batches=True):
     #how many output to tensorflow in one epoch
     num_of_batch_to_output_to_tensorboard = len(data_loader) // times_output_to_tensorboard
     if num_of_batch_to_output_to_tensorboard == 0:
@@ -58,7 +61,7 @@ def train(model, data_loader, loss_fn, optimizer, device, writer, checkpoint_by_
         gene_indices = batch['gene_indices'].to(device)
         labels = None
         ori_zero_expression_genes = batch['zero_expression_genes'].to(device).bool()
-        if LEARN_ON_ZERO_EXPR_GENES:
+        if params.LEARN_ON_ZERO_EXPR_GENES:
             zero_expression_genes = torch.zeros_like(ori_zero_expression_genes, dtype=torch.bool).to(device)
         else:
             zero_expression_genes = ori_zero_expression_genes
@@ -68,25 +71,25 @@ def train(model, data_loader, loss_fn, optimizer, device, writer, checkpoint_by_
             true_expression = batch['true_expression'].float().to(device)
             # cal loss using all the non-zero expressed genes, not only the expr masked genes
             masked_booleans = batch['masked_booleans'].to(device)
-            if PRETRAIN_LOSS_ONLY_ON_MASKED_GENES:
+            if params.PRETRAIN_LOSS_ONLY_ON_MASKED_GENES:
                 masked_idx = (masked_booleans & (~zero_expression_genes))
             else:
                 masked_idx = (~zero_expression_genes)
             
 
-            if TRANSFORMER_MODEL_NAME == "Bert_pred_tokens":
+            if params.TRANSFORMER_MODEL_NAME == "Bert_pred_tokens":
                 labels = gene_indices.clone()
                 gene_indices[masked_idx] = 0
                 labels[~masked_idx] = -100
                 labels = labels.to(device)
-            elif TRANSFORMER_MODEL_NAME == "BertExprInnerEmb":
+            elif params.TRANSFORMER_MODEL_NAME == "BertExprInnerEmb":
                 labels = true_expression.clone()
                 labels[~masked_idx] = -100
                 labels = labels.to(device)
 
             down_weighted_gene_emb_sum = None
             up_weighted_gene_emb_sum = None
-            true_expression_of_masked_genes = (true_expression[masked_idx] - NUM_BINS/2)/(NUM_BINS/2)
+            true_expression_of_masked_genes = (true_expression[masked_idx] - params.NUM_BINS/2)/(params.NUM_BINS/2)
             #mask = None
         elif mode == "finetune":
             input_expression = batch['input_binned_expr'].to(device)
@@ -96,7 +99,7 @@ def train(model, data_loader, loss_fn, optimizer, device, writer, checkpoint_by_
             down_weighted_gene_emb_sum = model.module.gene_expr_transformer.token_emb(perturbed_gene_index)
             down_weighted_gene_emb_sum = down_weighted_gene_emb_sum.squeeze(1)
             up_weighted_gene_emb_sum = None
-            true_expression_of_masked_genes = ((true_expression[masked_idx] - input_expression[masked_idx]))/(NUM_BINS/2)
+            true_expression_of_masked_genes = ((true_expression[masked_idx] - input_expression[masked_idx]))/(params.NUM_BINS/2)
 
         
 
@@ -110,17 +113,17 @@ def train(model, data_loader, loss_fn, optimizer, device, writer, checkpoint_by_
 
         if (batch_idx + 1) % gradient_accumulation_steps == 0 or batch_idx == len(data_loader) - 1:
             pred_expression = get_pred_using_model_and_input(model, gene_indices, input_expression, zero_expression_genes, 
-                                                            transformer_model_name=TRANSFORMER_MODEL_NAME, 
-                                                            output_attentions=OUTPUT_ATTENTIONS, 
-                                                            output_hidden_states=OUTPUT_HIDDEN_STATES,
+                                                            transformer_model_name=params.TRANSFORMER_MODEL_NAME, 
+                                                            output_attentions=params.OUTPUT_ATTENTIONS, 
+                                                            output_hidden_states=params.OUTPUT_HIDDEN_STATES,
                                                             down_weighted_gene_emb_sum=down_weighted_gene_emb_sum,
                                                             up_weighted_gene_emb_sum=up_weighted_gene_emb_sum,
                                                             labels=labels
                                                             )
-            if TRANSFORMER_MODEL_NAME in ["GPT", "Bert_pred_tokens", "BertExprInnerEmb"]:
+            if params.TRANSFORMER_MODEL_NAME in ["GPT", "Bert_pred_tokens", "BertExprInnerEmb"]:
                 loss = pred_expression.loss
             else:
-                pred_expression_of_masked_genes = pred_expression[masked_idx] - (input_expression[masked_idx] - NUM_BINS/2)/(NUM_BINS/2)
+                pred_expression_of_masked_genes = pred_expression[masked_idx] - (input_expression[masked_idx] - params.NUM_BINS/2)/(params.NUM_BINS/2)
                 loss = loss_fn(pred_expression_of_masked_genes.view(-1), true_expression_of_masked_genes.view(-1))
             loss.backward()
             #output hist here, avoid output gradients after optimizer.zero_grad()
@@ -129,24 +132,24 @@ def train(model, data_loader, loss_fn, optimizer, device, writer, checkpoint_by_
                 #print("output_parameter_hist_to_tensorboard here!")
                 output_parameter_hist_to_tensorboard(model, global_batch_idx, writer)
             optimizer.step()
-            if time_to_output_hist_and_checkpoint == True and save_check_point_by_batches == SAVE_CHECK_POINT_BY_BATCHES:
+            if time_to_output_hist_and_checkpoint == True and save_check_point_by_batches == params.SAVE_CHECK_POINT_BY_BATCHES:
                 save_checkpoint(model.module, optimizer, f"{checkpoint_by_batches_dir}/model.rank{rank}.batch{global_batch_idx}.pth", scheduler)
                 time_to_output_hist_and_checkpoint = False
             optimizer.zero_grad()
         else:
             with model.no_sync():
                 pred_expression = get_pred_using_model_and_input(model, gene_indices, input_expression, zero_expression_genes, 
-                                                transformer_model_name=TRANSFORMER_MODEL_NAME, 
-                                                output_attentions=OUTPUT_ATTENTIONS, 
-                                                output_hidden_states=OUTPUT_HIDDEN_STATES,
+                                                transformer_model_name=params.TRANSFORMER_MODEL_NAME, 
+                                                output_attentions=params.OUTPUT_ATTENTIONS, 
+                                                output_hidden_states=params.OUTPUT_HIDDEN_STATES,
                                                 down_weighted_gene_emb_sum=down_weighted_gene_emb_sum,
                                                 up_weighted_gene_emb_sum=up_weighted_gene_emb_sum,
                                                 labels=labels
                                                 )
-                if TRANSFORMER_MODEL_NAME in ["GPT", "Bert_pred_tokens", "BertExprInnerEmb"]:
+                if params.TRANSFORMER_MODEL_NAME in ["GPT", "Bert_pred_tokens", "BertExprInnerEmb"]:
                     loss = pred_expression.loss
                 else:
-                    pred_expression_of_masked_genes = pred_expression[masked_idx] - (input_expression[masked_idx] - NUM_BINS/2)/(NUM_BINS/2)
+                    pred_expression_of_masked_genes = pred_expression[masked_idx] - (input_expression[masked_idx] - params.NUM_BINS/2)/(params.NUM_BINS/2)
                     loss = loss_fn(pred_expression_of_masked_genes.view(-1), true_expression_of_masked_genes.view(-1))
                 loss.backward()
         
@@ -185,7 +188,7 @@ def evaluate(model, data_loader, loss_fn, device, writer, epoch, exp_label, eval
             gene_indices = batch['gene_indices'].to(device)
             labels = None
             ori_zero_expression_genes = batch['zero_expression_genes'].to(device).bool()
-            if LEARN_ON_ZERO_EXPR_GENES:
+            if params.LEARN_ON_ZERO_EXPR_GENES:
                 zero_expression_genes = torch.zeros_like(ori_zero_expression_genes, dtype=torch.bool).to(device)
             else:
                 zero_expression_genes = ori_zero_expression_genes
@@ -194,24 +197,24 @@ def evaluate(model, data_loader, loss_fn, device, writer, epoch, exp_label, eval
                 true_expression = batch['true_expression'].float().to(device)
                 # cal loss using all the non-zero expressed genes, not only the expr masked genes
                 masked_booleans = batch['masked_booleans'].to(device)
-                if PRETRAIN_LOSS_ONLY_ON_MASKED_GENES:
+                if params.PRETRAIN_LOSS_ONLY_ON_MASKED_GENES:
                     masked_idx = (masked_booleans & (~zero_expression_genes))
                 else:
                     masked_idx = (~zero_expression_genes)
 
-                if TRANSFORMER_MODEL_NAME == "Bert_pred_tokens":
+                if params.TRANSFORMER_MODEL_NAME == "Bert_pred_tokens":
                     labels = gene_indices.clone()
                     gene_indices[masked_idx] = 0
                     labels[~masked_idx] = -100
                     labels = labels.to(device)
-                elif TRANSFORMER_MODEL_NAME == "BertExprInnerEmb":
+                elif params.TRANSFORMER_MODEL_NAME == "BertExprInnerEmb":
                     labels = true_expression.clone()
                     labels[~masked_idx] = -100
                     labels = labels.to(device)
 
                 down_weighted_gene_emb_sum = None
                 up_weighted_gene_emb_sum = None
-                true_expression_of_masked_genes = (true_expression[masked_idx] - NUM_BINS/2)/(NUM_BINS/2)
+                true_expression_of_masked_genes = (true_expression[masked_idx] - params.NUM_BINS/2)/(params.NUM_BINS/2)
 
                 #mask = None
             elif mode == "finetune":
@@ -222,23 +225,23 @@ def evaluate(model, data_loader, loss_fn, device, writer, epoch, exp_label, eval
                 down_weighted_gene_emb_sum = model.module.gene_expr_transformer.token_emb(perturbed_gene_index)
                 down_weighted_gene_emb_sum = down_weighted_gene_emb_sum.squeeze(1)
                 up_weighted_gene_emb_sum = None
-                true_expression_of_masked_genes = ((true_expression[masked_idx] - input_expression[masked_idx]))/(NUM_BINS/2)
+                true_expression_of_masked_genes = ((true_expression[masked_idx] - input_expression[masked_idx]))/(params.NUM_BINS/2)
                 
           
             pred_expression = get_pred_using_model_and_input(model, gene_indices, input_expression, zero_expression_genes, 
-                                                transformer_model_name=TRANSFORMER_MODEL_NAME, 
-                                                output_attentions=OUTPUT_ATTENTIONS, 
-                                                output_hidden_states=OUTPUT_HIDDEN_STATES,
+                                                transformer_model_name=params.TRANSFORMER_MODEL_NAME, 
+                                                output_attentions=params.OUTPUT_ATTENTIONS, 
+                                                output_hidden_states=params.OUTPUT_HIDDEN_STATES,
                                                 down_weighted_gene_emb_sum=down_weighted_gene_emb_sum,
                                                 up_weighted_gene_emb_sum=up_weighted_gene_emb_sum,
-                                                shuffle_gene_indices=SHUFFLE_GENE_INDICES_IN_EVALUATION,
-                                                shuffle_expr_indices=SHUFFLE_EXPR_INDICES_IN_EVALUATION,
+                                                shuffle_gene_indices=params.SHUFFLE_GENE_INDICES_IN_EVALUATION,
+                                                shuffle_expr_indices=params.SHUFFLE_EXPR_INDICES_IN_EVALUATION,
                                                 labels=labels
                                                 )
-            if TRANSFORMER_MODEL_NAME in ["GPT", "Bert_pred_tokens", "BertExprInnerEmb"]:
+            if params.TRANSFORMER_MODEL_NAME in ["GPT", "Bert_pred_tokens", "BertExprInnerEmb"]:
                 loss = pred_expression.loss
             else:
-                pred_expression_of_masked_genes = pred_expression[masked_idx] - (input_expression[masked_idx] - NUM_BINS/2)/(NUM_BINS/2)
+                pred_expression_of_masked_genes = pred_expression[masked_idx] - (input_expression[masked_idx] - params.NUM_BINS/2)/(params.NUM_BINS/2)
                 loss = loss_fn(pred_expression_of_masked_genes.view(-1), true_expression_of_masked_genes.view(-1))
 
             total_loss += loss.item() * gene_indices.size(0)
@@ -250,7 +253,7 @@ def evaluate(model, data_loader, loss_fn, device, writer, epoch, exp_label, eval
             gene_indices_list.append(gene_indices.cpu().numpy())
             input_expression_list.append(input_expression.cpu().numpy()) 
             true_expression_list.append(true_expression.cpu().numpy())
-            if not(TRANSFORMER_MODEL_NAME in ["GPT", "Bert_pred_tokens", "BertExprInnerEmb"]): # Append true_expression to the list
+            if not(params.TRANSFORMER_MODEL_NAME in ["GPT", "Bert_pred_tokens", "BertExprInnerEmb"]): # Append true_expression to the list
                 pred_expression_list.append(pred_expression.cpu().numpy())
             else:
                 pred_expression_list.append([pred_expression.loss.cpu().numpy()])
@@ -270,7 +273,7 @@ def evaluate(model, data_loader, loss_fn, device, writer, epoch, exp_label, eval
 
 
 def output_parameter_hist_to_tensorboard(model, epoch, writer):
-    if OUTPUT_PARAMETER_HIST_TO_TENSOBOARD_BY_BATCH:
+    if params.OUTPUT_PARAMETER_HIST_TO_TENSOBOARD_BY_BATCH:
         #print("output_parameter_hist_to_tensorboard is real!")
         for name, param in model.named_parameters():
             if param.grad is None:
@@ -289,55 +292,56 @@ from models.GeneExprTransformer import GeneExprTransformerConfig
 
 def initiate_model():
     pretrained_emb_path = None
-    if PRETRAINED_TOKEN_EMB_FOR_INIT:
+    if params.PRETRAINED_TOKEN_EMB_FOR_INIT:
         pretrained_emb_path = config.get("gene2vec_embeddings_pyn_path")
 
-    vocab_size = len(gene2idx_of_whole_gene_emb)
+    gene2idx_of_whole_gene_emb = get_gene2idx_of_whole_gene_emb()
+    vocab_size = max(gene2idx_of_whole_gene_emb.values()) + 1
     # Define config dictionary
     config_dict = {
         "num_tokens": vocab_size,
-        "dim": HIDDEN_SIZE,
-        "depth": MODEL_DEPTH,
-        "heads": NUM_HEADS,
-        "reversible": MODEL_REVERSIBLE,
-        "no_projection": NO_RPOJECTION,
+        "dim": params.HIDDEN_SIZE,
+        "depth": params.MODEL_DEPTH,
+        "heads": params.NUM_HEADS,
+        "reversible": params.MODEL_REVERSIBLE,
+        "no_projection": params.NO_RPOJECTION,
         "pretrained_emb_path": pretrained_emb_path,
-        "dim_head": DIM_HEAD,
-        "feature_redraw_interval": FEATURE_REDRAW_INTERVAL,
-        "emb_dropout": EMB_DROPOUT,
-        "ff_dropout": FF_DROPOUT,
-        "attn_dropout": ATTN_DROPOUT,
-        "generalized_attention": GENERALIZED_ATTENTION,
-        "expression_emb_type": EXPRESSION_EMB_TYPE,
-        "gene_id_emb_requires_grad": GENE_ID_EMB_REQUIRES_GRAD,
-        "expr_emb_requires_grad": EXPR_EMB_REQUIRES_GRAD,
-        "number_of_bins_for_expression_embedding": NUM_BINS,
-        "layer_norm_eps": LAYER_NORM_EPS,
-        "norm_first": TRANSFORMER_NORM_FIRST,
-        "hidden_act": TRANSFORMER_HIDDEN_ACT_FUNC,
-        "transformer_model_name": TRANSFORMER_MODEL_NAME,
+        "dim_head": params.DIM_HEAD,
+        "feature_redraw_interval": params.FEATURE_REDRAW_INTERVAL,
+        "emb_dropout": params.EMB_DROPOUT,
+        "ff_dropout": params.FF_DROPOUT,
+        "attn_dropout": params.ATTN_DROPOUT,
+        "generalized_attention": params.GENERALIZED_ATTENTION,
+        "expression_emb_type": params.EXPRESSION_EMB_TYPE,
+        "gene_id_emb_requires_grad": params.GENE_ID_EMB_REQUIRES_GRAD,
+        "expr_emb_requires_grad": params.EXPR_EMB_REQUIRES_GRAD,
+        "number_of_bins_for_expression_embedding": params.NUM_BINS,
+        "layer_norm_eps": params.LAYER_NORM_EPS,
+        "norm_first": params.TRANSFORMER_NORM_FIRST,
+        "hidden_act": params.TRANSFORMER_HIDDEN_ACT_FUNC,
+        "transformer_model_name": params.TRANSFORMER_MODEL_NAME,
         "vocab_size": vocab_size,  # Assuming vocab_size is the number of unique genes
-        "n_positions": NUM_OF_GENES_SELECTED,  # Assuming n_positions is the number of genes selected
+        "n_positions": params.NUM_OF_GENES_SELECTED,  # Assuming n_positions is the number of genes selected
     }
 
     # Convert config dictionary to GeneExprTransformerConfig object
     model_config = GeneExprTransformerConfig(**config_dict)
     # print_config_assignments(model_config)
     # Create an instance of the appropriate model
-    if TRANSFORMER_MODEL_NAME == "GPT":
+    if params.TRANSFORMER_MODEL_NAME == "GPT":
         model = GeneExprTransformerGPT(model_config)
-    elif TRANSFORMER_MODEL_NAME == "Bert_pred_tokens":
+    elif params.TRANSFORMER_MODEL_NAME == "Bert_pred_tokens":
         model = GeneExprTransformerBertPredTokens(model_config)
-    elif TRANSFORMER_MODEL_NAME == "BertExprInnerEmb":
+    elif params.TRANSFORMER_MODEL_NAME == "BertExprInnerEmb":
         model = GeneExprTransformerBertExprInnerEmb(model_config)
     else:
         model = GeneExprTransformer2Expr(
             config=model_config,
-            to_out_layer_type=TO_OUT_LAYER_TYPE,
-            output_layer_hidden_size1=OUTPUT_LAYER_HIDDEN_SIZE1,
-            output_layer_hidden_size2=OUTPUT_LAYER_HIDDEN_SIZE2,
-            OutputLayer2FCs_dropout_rate=OUTPUTLAYER2FCS_DROPOUT_RATE,
-            method_to_combine_input_and_encoding=METHOD_TO_COMBINE_INPUT_AND_ENCODING
+            to_out_layer_type=params.TO_OUT_LAYER_TYPE,
+            output_layer_hidden_size1=params.OUTPUT_LAYER_HIDDEN_SIZE1,
+            output_layer_hidden_size2=params.OUTPUT_LAYER_HIDDEN_SIZE2,
+            OutputLayer2FCs_dropout_rate=params.OUTPUTLAYER2FCS_DROPOUT_RATE,
+            method_to_combine_input_and_encoding=params.METHOD_TO_COMBINE_INPUT_AND_ENCODING
         )
     print(model)
     return model

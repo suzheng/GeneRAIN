@@ -1,3 +1,5 @@
+from utils.params import params
+params = params()
 import h5py
 import torch
 import numpy as np
@@ -8,7 +10,9 @@ from data.BertMasking import get_bert_masking
 
 from utils.json_utils import JsonUtils
 ju = JsonUtils()
-from train.common import *
+from train.common_params_funs import config, get_gene2idx, get_gene2idx_of_whole_gene_emb
+from train.common import train
+
 
 from utils.config_loader import Config
 config = Config()
@@ -26,13 +30,13 @@ from data.data_utils import get_top_genes
 # In coding_lncrna dataset, only genes satisfying nondup_qualified & mean_z_scores are included
 
 # To keep the historical code consistent
-if GENE_EMB_NAME == "gene2vec":
+if params.GENE_EMB_NAME == "gene2vec":
     gene_to_idx = get_gene2idx_of_whole_gene_emb()
 else:
     gene_to_idx, _ = get_gene2idx()
 
 # std_dev_for_another_normal_distr_for_binning = STD_DEV_FOR_ANOTHER_NORMAL_DISTR_FOR_BINNING
-use_and_keep_zero_expr_genes = USE_AND_KEEP_ZERO_EXPR_GENES
+use_and_keep_zero_expr_genes = params.USE_AND_KEEP_ZERO_EXPR_GENES
 if use_and_keep_zero_expr_genes:
     output_file_prefix = proj_path + f"/data/external/ARCHS/normalize_each_gene/{ARCHS_file_basename_prefix}_with_zero_expr_genes"
 else:
@@ -43,17 +47,17 @@ else:
 class ARCHSDataset(Dataset):
     def __init__(self, 
     h5_file_path=ARCHS_gene_expression_h5_path, 
-    n_bins=NUM_BINS, 
-    mask_fraction=MASK_FRACTIONS[0], 
-    expr_discretization_method=EXPR_DISCRETIZATION_METHOD, 
+    n_bins=params.NUM_BINS, 
+    mask_fraction=params.MASK_FRACTIONS[0], 
+    expr_discretization_method=params.EXPR_DISCRETIZATION_METHOD, 
     load_data_into_mem=False, 
     chunk_idx=0, 
-    num_of_genes=NUM_OF_GENES_SELECTED,
+    num_of_genes=params.NUM_OF_GENES_SELECTED,
     gene_stat_uniq_bool_file=output_file_prefix + ".gene_stat_filt_on_z_dup.tsv",
-    min_mean_val_for_zscore=MIN_MEAN_VAL_FOR_ZSCORE,
-    only_use_postive_zscores_in_training=ONLY_USE_POSITIVE_ZSCORES_IN_TRAINING,
-    number_of_special_embeddings=NUMBER_OF_SPECIAL_TOKEN_IN_DATASET,
-    sort_return_expr_numerically=(TRANSFORMER_MODEL_NAME == "GPT" or TRANSFORMER_MODEL_NAME == "Bert_pred_tokens")
+    min_mean_val_for_zscore=params.MIN_MEAN_VAL_FOR_ZSCORE,
+    only_use_postive_zscores_in_training=params.ONLY_USE_POSITIVE_ZSCORES_IN_TRAINING,
+    number_of_special_embeddings=params.NUMBER_OF_SPECIAL_TOKEN_IN_DATASET,
+    sort_return_expr_numerically=(params.TRANSFORMER_MODEL_NAME == "GPT" or params.TRANSFORMER_MODEL_NAME == "Bert_pred_tokens")
     ):
         self.h5_file_path = h5_file_path
         self.h5_file = h5py.File(self.h5_file_path, "r")
@@ -101,8 +105,8 @@ class ARCHSDataset(Dataset):
                 print(f'loading {output_file_prefix}_bin_tot100_final_chunk_{chunk_idx}.npy')
                 self.filtered_expression_data = np.load(f'{output_file_prefix}_bin_tot100_final_chunk_{chunk_idx}.npy')
             elif self.expr_discretization_method == "uniform_bin_count_keep_ones":
-                print(f'loading {output_file_prefix}_bin_tot2000_final_{GENE_EMB_NAME}_chunk_{chunk_idx}.npy')
-                self.filtered_expression_data = np.load(f'{output_file_prefix}_bin_tot2000_final_{GENE_EMB_NAME}_chunk_{chunk_idx}.npy')
+                print(f'loading {output_file_prefix}_bin_tot2000_final_{params.GENE_EMB_NAME}_chunk_{chunk_idx}.npy')
+                self.filtered_expression_data = np.load(f'{output_file_prefix}_bin_tot2000_final_{params.GENE_EMB_NAME}_chunk_{chunk_idx}.npy')
             else:
                 print(output_file_prefix + f"_final_chunk_{chunk_idx}.npy")
                 self.filtered_expression_data = np.load(output_file_prefix + f"_final_chunk_{chunk_idx}.npy")

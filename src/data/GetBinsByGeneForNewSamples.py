@@ -9,7 +9,9 @@ module_name = "data.normalize_each_gene.4_cal_bins_on_one_chunk_of_genes"
 module = importlib.import_module(module_name)
 cal_bin_for_each_gene_in_gene_by_sample_mat = getattr(module, "cal_bin_for_each_gene_in_gene_by_sample_mat")
 
-# from train.common_params_funs import *
+# from train.common_params_funs import config
+from train.common import train
+
 config = Config()
 ju = JsonUtils()
 

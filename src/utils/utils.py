@@ -1,3 +1,5 @@
+from utils.params import params
+params = params()
 import torch
 import numpy as np
 import h5py
@@ -16,16 +18,14 @@ def get_model(param_json_file, check_point_path, use_old_to_out=False):
     import os
     if 'PARAM_JSON_FILE' not in os.environ:
         os.environ['PARAM_JSON_FILE'] = param_json_file
-    from train.common_params_funs import PRETRAINED_TOKEN_EMB_FOR_INIT, TRANSFORMER_MODEL_NAME
-    print(f"TRANSFORMER_MODEL_NAME {TRANSFORMER_MODEL_NAME}")
+    print(f"params.TRANSFORMER_MODEL_NAME {params.TRANSFORMER_MODEL_NAME}")
     from train.common import initiate_model
     from utils.checkpoint_utils import save_checkpoint, load_checkpoint
     config = get_config()
     model = initiate_model()
     if use_old_to_out:
         from models.OutputLayer2FCs import OutputLayer2FCs_old
-        from train.common_params_funs import HIDDEN_SIZE, OUTPUT_LAYER_HIDDEN_SIZE1, OUTPUT_LAYER_HIDDEN_SIZE2, OUTPUTLAYER2FCS_DROPOUT_RATE
-        model.to_out = OutputLayer2FCs_old(HIDDEN_SIZE, OUTPUT_LAYER_HIDDEN_SIZE1, OUTPUT_LAYER_HIDDEN_SIZE2, OUTPUTLAYER2FCS_DROPOUT_RATE)
+        model.to_out = OutputLayer2FCs_old(params.HIDDEN_SIZE, params.OUTPUT_LAYER_HIDDEN_SIZE1, params.OUTPUT_LAYER_HIDDEN_SIZE2, params.OUTPUTLAYER2FCS_DROPOUT_RATE)
     if "/RNA_expr_net/" not in check_point_path:
         check_point_path = config.get("checkpoint_dir_path") + f"/{check_point_path}"
     model, optimizer, scheduler = load_checkpoint(model, None, check_point_path, None)
