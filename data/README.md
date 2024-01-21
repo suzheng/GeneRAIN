@@ -65,7 +65,6 @@ Example input and output for the `notebooks/anal/anal_dataset.ipynb`.
 	data/examples/ReplogleWeissman2022_K562_essential.h5ad.mean_agg.coding_lncrna.binned.pkl
 
 ### Gene Attribute Prediction Results
-All the coding and lncRNA gene attribute prediction results can be found in `genes_clf_pred_results.parquet` , which has the same format as `Supplementary Table 7`, except that it lists the predicted probabilities of all genes, which are in the order specified in file `genes_clf_pred_results.genes.txt`.
+All the coding and lncRNA gene attribute prediction results can be found in `genes_clf_pred_results.parquet` , which has the same format as `Supplementary Table 7`, except that it lists the predicted probabilities of all genes.
 
 	data/results/genes_clf_pred_results.parquet
-	data/results/genes_clf_pred_results.genes.txt
