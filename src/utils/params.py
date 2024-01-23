@@ -98,9 +98,9 @@ class params:
         if item in self.data:
             ret_val = self.data.get(item)
             
-        if item in self.default_values and item in self.data and (self.default_values.get(item) != self.data.get(item)):
-            print(f"Using value of {ret_val} for {item}, which is different from default value of {self.default_values.get(item)}.")
+        # if item in self.default_values and item in self.data and (self.default_values.get(item) != self.data.get(item)):
+        #     print(f"Using value of {ret_val} for {item}, which is different from default value of {self.default_values.get(item)}.")
 
-        if item in self.default_values and item not in self.data:
-            print(f"Using default value of {ret_val} for {item}.")  
+        # if item in self.default_values and item not in self.data:
+        #     print(f"Using default value of {ret_val} for {item}.")  
         return ret_val

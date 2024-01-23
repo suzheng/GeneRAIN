@@ -343,7 +343,7 @@ def initiate_model():
             OutputLayer2FCs_dropout_rate=params.OUTPUTLAYER2FCS_DROPOUT_RATE,
             method_to_combine_input_and_encoding=params.METHOD_TO_COMBINE_INPUT_AND_ENCODING
         )
-    print(model)
+    # print(model)
     return model
 
 
